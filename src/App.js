@@ -1,29 +1,23 @@
 import './App.css';
-import { useEffect} from 'react';
+import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getSeoulBikeData } from './redux/DataSetSlice';
+import ScatterplotContainer from './components/ScatterplotContainer'; // Import Scatterplot component
+import SecondVisualizationContainer from './components/SecondVisualizationContainer'; // Import second visualization
 
-// here import other dependencies
-
-// a component is a piece of code which render a part of the user interface
 function App() {
   const dispatch = useDispatch();
-  useEffect(()=>{
-    console.log("App useEffect");
-  })
 
-  // called once the component did mount
-  useEffect(()=>{
-    // initialize the data from file
+  // Fetch bike-sharing data when component mounts
+  useEffect(() => {
     dispatch(getSeoulBikeData());
-  },[])
+  }, [dispatch]);
 
   return (
     <div className="App">
-        {console.log("App rendering")}
         <div id="view-container" className="row">
-          {/*<ScatterplotContainer/>*/}
-          {/* <YourVisContainer/> */}
+          <ScatterplotContainer /> {/* Render scatterplot */}
+          <SecondVisualizationContainer /> {/* Render second visualization */}
         </div>
     </div>
   );
