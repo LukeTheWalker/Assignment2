@@ -2,8 +2,8 @@ import './App.css';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getSeoulBikeData } from './redux/DataSetSlice';
-import ScatterplotContainer from './components/ScatterplotContainer'; // Import Scatterplot component
-import SecondVisualizationContainer from './components/SecondVisualizationContainer'; // Import second visualization
+import ScatterplotContainer from './components/ScatterPlot/ScatterplotContainer'; // Import Scatterplot component
+import SecondVisualizationContainer from './components/SecondVis/SecondVisualizationContainer'; // Import second visualization
 
 function App() {
   const dispatch = useDispatch();
@@ -11,16 +11,17 @@ function App() {
   // Fetch bike-sharing data when component mounts
   useEffect(() => {
     dispatch(getSeoulBikeData());
-  }, [dispatch]);
+  });
 
-  return (
-    <div className="App">
-        <div id="view-container" className="row">
-          <ScatterplotContainer /> {/* Render scatterplot */}
-          <SecondVisualizationContainer /> {/* Render second visualization */}
-        </div>
+return (
+    <div className="App" style={{ 
+        display: "flex", 
+        justifyContent: "center"
+    }}>
+        <ScatterplotContainer /> {/* Render scatterplot */}
+        <SecondVisualizationContainer /> {/* Render second visualization */}
     </div>
-  );
+);
 }
 
 export default App;
