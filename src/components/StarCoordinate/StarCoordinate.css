@@ -1,0 +1,13 @@
+.starCoordinateDivContainer{
+    height: 100%;
+    width: 100%;
+}
+
+.axisLabel {
+    padding: 40px; /* Increase padding to enlarge the clickable area */
+    cursor: grab;  /* Change cursor to indicate draggable item */
+}
+
+.axisLabel:active {
+    cursor: grabbing; /* Change cursor to indicate dragging */
+}

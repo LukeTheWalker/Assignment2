@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getSeoulBikeData } from './redux/DataSetSlice';
 import ScatterplotContainer from './components/ScatterPlot/ScatterplotContainer'; // Import Scatterplot component
-import SecondVisualizationContainer from './components/SecondVis/PulsarContainer'; // Import second visualization
+import StarCoordinateContainer from './components/StarCoordinate/StarCoordinateContainer'; // Import second visualization
 
 function App() {
   const dispatch = useDispatch();
@@ -19,7 +19,7 @@ return (
         justifyContent: "center"
     }}>
         <ScatterplotContainer /> {/* Render scatterplot */}
-        <SecondVisualizationContainer /> {/* Render second visualization */}
+        <StarCoordinateContainer /> {/* Render second visualization */}
     </div>
 );
 }
