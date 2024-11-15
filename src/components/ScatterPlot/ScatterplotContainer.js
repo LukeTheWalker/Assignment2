@@ -1,4 +1,4 @@
-import './Scatterplot.css'
+import './ScatterPlot.css'
 import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
 import { updateSelectedItem } from '../../redux/DataSetSlice';
@@ -39,7 +39,7 @@ function ScatterplotContainer() {
 
     // did mount called once the component did mount
     useEffect(() => {
-        console.log("Component did mount");
+        console.log("ScatterplotContainer useEffect for mounting");
         const scatterplotD3 = new ScatterplotD3(divContainerRef.current);
         scatterplotD3.create({ size: getCharSize() });
         scatterplotD3Ref.current = scatterplotD3;

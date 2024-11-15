@@ -110,6 +110,9 @@ class ScatterplotD3 {
         const minX = d3.min(visData.map(item => item[xAttribute]));
         const maxX = d3.max(visData.map(item => item[xAttribute]));
 
+        const minY = d3.min(visData.map(item => item[yAttribute]));
+        const maxY = d3.max(visData.map(item => item[yAttribute]));
+
         if (xAttribute === "Date") {
             this.xScale = d3.scaleTime().range([0, this.width]);
             this.xScale.domain([new Date(minX), new Date(maxX)]);
@@ -119,9 +122,6 @@ class ScatterplotD3 {
             this.xScale.domain([minX, maxX]);
         }
 
-        const minY = d3.min(visData.map(item => item[yAttribute]));
-        const maxY = d3.max(visData.map(item => item[yAttribute]));
-
         if (yAttribute === "Date") {
             this.yScale = d3.scaleTime().range([this.height, 0]);
             this.yScale.domain([new Date(minY), new Date(maxY)]);
@@ -130,9 +130,6 @@ class ScatterplotD3 {
             this.yScale = d3.scaleLinear().range([this.height, 0]);
             this.yScale.domain([minY, maxY]);
         }
-
-        console.log("xScale", this.xScale.domain(), this.xScale.range());
-        console.log("yScale", this.yScale.domain(), this.yScale.range());
 
         // Update the x-axis
         this.svg.select(".xAxisG")
@@ -207,6 +204,7 @@ class ScatterplotD3 {
     }
 
     renderScatterplot = function (visData, xAttribute, yAttribute, controllerMethods) {
+        if (!visData || !visData.length) return;
         this.updateAxis(visData, xAttribute, yAttribute);
 
         this.allDotsG.selectAll(".dotG")

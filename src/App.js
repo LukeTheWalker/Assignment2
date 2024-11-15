@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getSeoulBikeData } from './redux/DataSetSlice';
 import ScatterplotContainer from './components/ScatterPlot/ScatterplotContainer'; // Import Scatterplot component
-import SecondVisualizationContainer from './components/SecondVis/SecondVisualizationContainer'; // Import second visualization
+import SecondVisualizationContainer from './components/SecondVis/PulsarContainer'; // Import second visualization
 
 function App() {
   const dispatch = useDispatch();
