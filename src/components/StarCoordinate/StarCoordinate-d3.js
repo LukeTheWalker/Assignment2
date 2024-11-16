@@ -12,6 +12,9 @@ class StarCoordinateD3 {
     circleRadius = 2;
     defaultOpacity = .3;
 
+    focused;
+    toolTipFading = false;
+
     valid_options = ["RentedBikeCount", "Hour", "Temperature", "Snowfall", "Visibility", "WindSpeed", "Rainfall", "DewPointTemperature", "Humidity", "SolarRadiation"]
     constructor(el){
         this.el=el;
@@ -29,7 +32,6 @@ class StarCoordinateD3 {
         };
 
         this.seasonColorScale = utils.seasonColorScale
-
         this.holydaySymbolScale = utils.holydaySymbolScale
 
         // initialize the svg and keep it in a class property to reuse it in renderMatrix()
@@ -40,12 +42,17 @@ class StarCoordinateD3 {
         this.svgG = this.svg.append("g")
             .attr("class","svgG")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
-        
-        this.svgG.append("g")
-            .attr("class", "brushG");
 
+        this.svgPosition = {
+            left: this.margin.left + this.svg.node().getBoundingClientRect().left,
+            top : this.margin.top  + this.svg.node().getBoundingClientRect().top,
+        } 
+        
         this.allDotsG = this.svgG.append("g")
             .attr("class", "allDotsG");
+
+        this.svgG.append("g")
+            .attr("class", "brushG");
 
         this.axesG = this.svgG.append("g")
             .attr("class","axesG");        
@@ -87,8 +94,9 @@ class StarCoordinateD3 {
                         this.axis_tips[index] = { x, y };
                         this.updateAxis(visData);
                         this.updateDots(this.allDotsG.selectAll(".dotG"));
-                    }
-                ));
+                    })
+                    .on("end", () => this.quadtree = d3.quadtree().x(d => this.getX(d)).y(d => this.getY(d)).addAll(visData))
+                );
         });
     }
 
@@ -182,24 +190,51 @@ class StarCoordinateD3 {
     }
 
     addBrush = function (onBrush) {
+        const self = this;
         const brush = d3.brush()
             .extent([[0, 0], [this.width, this.height]])
             .filter((e) => !e.ctrlKey && !e.button)
             .on("start brush end", (event) => {
                 if (event.selection) {
-                    // const [[x0, y0], [x1, y1]] = event.selection;
-                    // const selectedData = this.allDotsG.selectAll(".dotG").data().filter(d => {
-                    //     //     const position = this.getPoint(d);
-                    //     //     return x0 <= position.x && position.x <= x1 &&
-                    //     //            y0 <= position.y && position.y <= y1;
-                    //     // }
-                    //     return filterInRectFromQuadtree(this.quadtree, event.selection, d => this.getX(d), d => this.getY(d));
-                    // });
                     const selectedData = filterInRectFromQuadtree(this.quadtree, event.selection, d => this.getX(d), d => this.getY(d));
                     onBrush(selectedData);
                 }
             });
         this.svgG.select(".brushG")
+            .on('contextmenu', function (e, d) {
+                e.preventDefault();
+                const selection = self.quadtree.find(e.x - self.svgPosition.left, e.y - self.svgPosition.top, 7);
+                if (!selection) return;
+                const selector  = self.allDotsG.selectAll(".dotG").nodes()[selection.index];
+                self.toolTipFading = false;
+                Tooltip.render_tooltip(selection, selector, self.svgPosition);
+            })
+            .on('mousemove', function (e, d) {
+                const selection = self.quadtree.find(e.x - self.svgPosition.left, e.y - self.svgPosition.top, 7);
+                if (selection) {
+                    if (self.focused && self.focused.index === selection.index) return;
+                    if (self.focused){
+                        const oldSelector = self.allDotsG.selectAll(".dotG").nodes()[self.focused.index];
+                        d3.select(oldSelector).style('stroke', 'none').style('stroke-width', '0').attr('opacity', self.defaultOpacity);
+                    }
+                    self.focused = selection
+                    const selector = self.allDotsG.selectAll(".dotG").nodes()[selection.index];
+                    d3.select(selector).style('stroke', 'black').style('stroke-width', '1').attr('opacity', '1');
+                } else {
+                    if (self.focused) {
+                        const selector = self.allDotsG.selectAll(".dotG").nodes()[self.focused.index];
+                        d3.select(selector).style('stroke', 'none').style('stroke-width', '0').attr('opacity', self.defaultOpacity);
+                        self.focused = undefined;
+                    }
+                }
+                if (self.toolTipFading) return;
+                self.tooltipdiv.interrupt()
+                                       .transition()
+                                       .duration(500)
+                                       .style("opacity", 0);
+                self.toolTipFading = true;
+
+            })
             .call(brush);
     }
 
@@ -216,31 +251,10 @@ class StarCoordinateD3 {
             .data(visData, (itemData) => itemData.index)
             .join(
                 enter=>{
-                    const self = this;
                     const dotG=enter.append("g")
                         .attr("class","dotG")
                         .attr("transform", `translate(${this.anchorPoint.x}, ${this.anchorPoint.y})`)
                         .attr("opacity", this.defaultOpacity)
-                        .on('mouseover', function (e, d) {
-                            d3.select(this).style('stroke', 'black').style('stroke-width', '1').attr('opacity', '1');
-                        })
-                        .on('contextmenu', function (e, d) {
-                            e.preventDefault();
-                            const svgPosition = self.svg.node().getBoundingClientRect();
-                            const pos = {
-                                left: self.margin.left + svgPosition.left,
-                                top : self.margin.top + svgPosition.top,
-                            }
-                            Tooltip.render_tooltip(d, this, pos);
-                        })
-                        .on('mouseout', function (e, d) {
-                            d3.select(this).attr("opacity", self.defaultOpacity).style('stroke', 'none').style('stroke-width', '0');
-                            self.tooltipdiv
-                                .interrupt()
-                                .transition()
-                                .duration(300)
-                                .style("opacity", 0);
-                        });
 
                     dotG.append("path")
                         .attr("class", "dotCircle")

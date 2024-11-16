@@ -2,7 +2,6 @@ import * as d3 from 'd3';
 import utils from '../common';
 import Tooltip from '../Tooltip/Tooltip';
 import { filterInRectFromQuadtree } from 'vis-utils';
-import { quadtree } from 'd3-quadtree';
 
 class ScatterplotD3 {
     margin = { top: 10, right: 10, bottom: 40, left: 60 };
@@ -17,6 +16,9 @@ class ScatterplotD3 {
     yScale;
     seasonColorScale;
     holydaySymbolScale;
+
+    focused;
+    toolTipFading = false;
 
     constructor(el) {
         this.el = el;
@@ -61,13 +63,17 @@ class ScatterplotD3 {
             .attr("y", -this.margin.left + 20)
             .attr("fill", "black")
             .style("text-anchor", "middle");
-
-                    
-        this.svgG.append("g")
-            .attr("class", "brushG");
-            
+                                
         this.allDotsG = this.svgG.append("g")
             .attr("class", "allDotsG");
+
+        this.svgG.append("g")
+            .attr("class", "brushG");
+
+        this.svgPosition = {
+            left: this.margin.left + this.svg.node().getBoundingClientRect().left,
+            top : this.margin.top  + this.svg.node().getBoundingClientRect().top,
+        } 
 
         this.tooltipdiv = d3.select("body").select(".tooltip-div");
     }
@@ -123,21 +129,52 @@ class ScatterplotD3 {
     }
 
     addBrush = function (onBrush, xAttribute, yAttribute) {
+        const self = this;
         const brush = d3.brush()
             .extent([[0, 0], [this.width, this.height]])
             .filter((e) => !e.ctrlKey && !e.button)
             .on("start brush end", (event) => {
                 if (event.selection) {
-                    // const [[x0, y0], [x1, y1]] = event.selection;
-                    // const selectedData = this.allDotsG.selectAll(".dotG").data().filter(d =>
-                    //     x0 <= this.xScale(d[xAttribute]) && this.xScale(d[xAttribute]) <= x1 &&
-                    //     y0 <= this.yScale(d[yAttribute]) && this.yScale(d[yAttribute]) <= y1
-                    // );
                     const selectedData = filterInRectFromQuadtree(this.quadtree, event.selection, d => this.xScale(d[xAttribute]), d => this.yScale(d[yAttribute]));
                     onBrush(selectedData);
                 }}
             );
-        this.svgG.select(".brushG")
+            this.svgG.select(".brushG")
+            .on('contextmenu', function (e, d) {
+                e.preventDefault();
+                const selection = self.quadtree.find(e.x - self.svgPosition.left, e.y - self.svgPosition.top, 7);
+                if (!selection) return;
+                const selector  = self.allDotsG.selectAll(".dotG").nodes()[selection.index];
+                self.toolTipFading = false;
+                Tooltip.render_tooltip(selection, selector, self.svgPosition);
+            })
+            .on('mousemove', function (e, d) {
+                const selection = self.quadtree.find(e.x - self.svgPosition.left, e.y - self.svgPosition.top, 7);
+                if (selection) {
+                    if (self.focused && self.focused.index === selection.index) return;
+                    if (self.focused){
+                        const oldSelector = self.allDotsG.selectAll(".dotG").nodes()[self.focused.index];
+                        d3.select(oldSelector).style('stroke', 'none').style('stroke-width', '0').attr('opacity', self.defaultOpacity);
+                    }
+                    self.focused = selection
+                    const selector = self.allDotsG.selectAll(".dotG").nodes()[selection.index];
+                    d3.select(selector).style('stroke', 'black').style('stroke-width', '1').attr('opacity', '1');
+                } else {
+                    if (self.focused) {
+                        const selector = self.allDotsG.selectAll(".dotG").nodes()[self.focused.index];
+                        d3.select(selector).style('stroke', 'none').style('stroke-width', '0').attr('opacity', self.defaultOpacity);
+                        self.focused = undefined;
+                    }
+                }
+                if (self.toolTipFading) return;
+                self.tooltipdiv.interrupt()
+                                       .transition()
+                                       .duration(500)
+                                       .style("opacity", 0);
+                self.toolTipFading = true;
+
+            })
+            
             .call(brush);
     }
 
@@ -153,30 +190,9 @@ class ScatterplotD3 {
             .data(visData, (itemData) => itemData.index)
             .join(
                 enter => {
-                    const self = this;
                     const itemG = enter.append("g")
                         .attr("class", "dotG")
-                        .attr("opacity", this.defaultOpacity)
-                        .on('mouseover', function (e, d) {
-                            d3.select(this).style('stroke', 'black').style('stroke-width', '1').attr('opacity', '1');
-                        })
-                        .on('contextmenu', function (e, d) {
-                            e.preventDefault();
-                            const svgPosition = self.svg.node().getBoundingClientRect();
-                            const pos = {
-                                left: svgPosition.left + self.margin.left,
-                                top : svgPosition.top + self.margin.top
-                            }
-                            Tooltip.render_tooltip(d, this, pos);
-                        })
-                        .on('mouseout', function (e, d) {
-                            d3.select(this).attr("opacity", self.defaultOpacity).style('stroke', 'none').style('stroke-width', '0');
-                            self.tooltipdiv
-                                .interrupt()
-                                .transition()
-                                .duration(300)
-                                .style("opacity", 0);
-                        });
+                        .attr("opacity", this.defaultOpacity);
 
                     itemG.append("path")
                         .attr("class", "dotCircle")
