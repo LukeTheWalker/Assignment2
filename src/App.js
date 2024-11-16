@@ -2,7 +2,7 @@ import './App.css';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getSeoulBikeData } from './redux/DataSetSlice';
-import ScatterplotContainer from './components/ScatterPlot/ScatterplotContainer'; // Import Scatterplot component
+import ScatterplotContainer from './components/ScatterPlot/ScatterPlotContainer'; // Import Scatterplot component
 import StarCoordinateContainer from './components/StarCoordinate/StarCoordinateContainer'; // Import second visualization
 
 function App() {

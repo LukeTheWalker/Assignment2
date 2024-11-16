@@ -5,7 +5,7 @@ import { updateSelectedItem } from '../../redux/DataSetSlice';
 import { setSelectedX, setSelectedY } from '../../redux/ScatterPlotSlice';
 import Select from 'react-select';
 
-import ScatterplotD3 from './Scatterplot-d3'
+import ScatterplotD3 from './ScatterPlot-d3'
 
 function ScatterplotContainer() {
     const data = useSelector(state => state.dataSet.data)
