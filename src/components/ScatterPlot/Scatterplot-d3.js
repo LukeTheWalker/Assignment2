@@ -28,8 +28,8 @@ class ScatterplotD3 {
 
         this.svg = d3.select(this.el).append("svg")
             .attr("width", this.width + this.margin.left + this.margin.right)
-            .attr("height", this.height + this.margin.top + this.margin.bottom)
-            .append("g")
+            .attr("height", this.height + this.margin.top + this.margin.bottom);
+        this.svgG = this.svg.append("g")
             .attr("class", "svgG")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
@@ -38,7 +38,7 @@ class ScatterplotD3 {
         this.seasonColorScale = utils.seasonColorScale
         this.holydaySymbolScale = utils.holydaySymbolScale
 
-        const xAxisGroup = this.svg.append("g")
+        const xAxisGroup = this.svgG.append("g")
             .attr("class", "xAxisG")
             .attr("transform", "translate(0," + this.height + ")");
 
@@ -49,7 +49,7 @@ class ScatterplotD3 {
             .attr("fill", "black")
             .style("text-anchor", "middle")
 
-        const yAxisGroup = this.svg.append("g")
+        const yAxisGroup = this.svgG.append("g")
             .attr("class", "yAxisG");
 
         yAxisGroup.append("text")
@@ -61,10 +61,10 @@ class ScatterplotD3 {
             .style("text-anchor", "middle");
 
                     
-        this.svg.append("g")
+        this.svgG.append("g")
             .attr("class", "brushG");
             
-        this.allDotsG = this.svg.append("g")
+        this.allDotsG = this.svgG.append("g")
             .attr("class", "allDotsG");
 
         this.tooltipdiv = d3.select("body").select(".tooltip-div");
@@ -112,17 +112,17 @@ class ScatterplotD3 {
         }
 
         // Update the x-axis
-        this.svg.select(".xAxisG")
+        this.svgG.select(".xAxisG")
             .transition().duration(this.transitionDuration)
             .call(d3.axisBottom(this.xScale))
 
         // Update the y-axis
-        this.svg.select(".yAxisG")
+        this.svgG.select(".yAxisG")
             .transition().duration(this.transitionDuration)
             .call(d3.axisLeft(this.yScale));
 
-        this.svg.select(".xAxisLabel").text(xAttribute);
-        this.svg.select(".yAxisLabel").text(yAttribute);
+        this.svgG.select(".xAxisLabel").text(xAttribute);
+        this.svgG.select(".yAxisLabel").text(yAttribute);
     }
 
     addBrush = function (onBrush) {
@@ -130,17 +130,16 @@ class ScatterplotD3 {
             .extent([[0, 0], [this.width, this.height]])
             .filter((e) => !e.ctrlKey && !e.button)
             .on("start end", (event) => {
-                console.log(event)
                 if (event.selection) {
                     const [[x0, y0], [x1, y1]] = event.selection;
-                    const selectedData = this.svg.selectAll(".dotG").data().filter(d =>
+                    const selectedData = this.allDotsG.selectAll(".dotG").data().filter(d =>
                         x0 <= this.xScale(d[this.xAttribute]) && this.xScale(d[this.xAttribute]) <= x1 &&
                         y0 <= this.yScale(d[this.yAttribute]) && this.yScale(d[this.yAttribute]) <= y1
                     );
                     onBrush(selectedData);
                 }}
             );
-        this.svg.select(".brushG")
+        this.svgG.select(".brushG")
             .call(brush);
     }
 
@@ -163,8 +162,8 @@ class ScatterplotD3 {
                             e.preventDefault();
                             const svgPosition = self.svg.node().getBoundingClientRect();
                             const pos = {
-                                left: self.margin.left + svgPosition.left,
-                                top : self.margin.top + svgPosition.top,
+                                left: svgPosition.left + self.margin.left,
+                                top : svgPosition.top + self.margin.top
                             }
                             Tooltip.render_tooltip(d, this, pos);
                         })

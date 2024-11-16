@@ -1,5 +1,6 @@
 import * as d3 from 'd3'
 import utils from '../common'
+import Tooltip from '../Tooltip/Tooltip';
 
 class StarCoordinateD3 {
     margin = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -33,8 +34,9 @@ class StarCoordinateD3 {
         // initialize the svg and keep it in a class property to reuse it in renderMatrix()
         this.svg=d3.select(this.el).append("svg")
             .attr("width", this.width + this.margin.left + this.margin.right)
-            .attr("height", this.height + this.margin.top + this.margin.bottom)
-            .append("g")
+            .attr("height", this.height + this.margin.top + this.margin.bottom);
+            
+        this.svg.append("g")
             .attr("class","svgG")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
@@ -66,6 +68,8 @@ class StarCoordinateD3 {
                 .attr("id", "axisLabel" + axis)
                 .text(axis)
         });
+
+        this.tooltipdiv = d3.select("body").select(".tooltip-div");
     }
 
     addDragging = function(visData){
@@ -178,21 +182,31 @@ class StarCoordinateD3 {
             .data(visData, (itemData) => itemData.index)
             .join(
                 enter=>{
-                    // all data items to add:
-                    // doesn’exist in the select but exist in the new array
+                    const self = this;
                     const dotG=enter.append("g")
                         .attr("class","dotG")
                         .attr("transform", `translate(${this.anchorPoint.x}, ${this.anchorPoint.y})`)
-                        .attr("opacity", this.defaultOpacity);
-
-
-
-                    // render element as child of each element "g"
-                    // dotG.append("g")
-                    //     .attr("class", "dotCircle")
-                    //     .append("path")
-                    //     .style("opacity", 0.3)
-                    //     .attr("r", 3)
+                        .attr("opacity", this.defaultOpacity)
+                        .on('mouseover', function (e, d) {
+                            d3.select(this).style('stroke', 'black').style('stroke-width', '1').attr('opacity', '1');
+                        })
+                        .on('contextmenu', function (e, d) {
+                            e.preventDefault();
+                            const svgPosition = self.svg.node().getBoundingClientRect();
+                            const pos = {
+                                left: self.margin.left + svgPosition.left,
+                                top : self.margin.top + svgPosition.top,
+                            }
+                            Tooltip.render_tooltip(d, this, pos);
+                        })
+                        .on('mouseout', function (e, d) {
+                            d3.select(this).attr("opacity", self.defaultOpacity).style('stroke', 'none').style('stroke-width', '0');
+                            self.tooltipdiv
+                                .interrupt()
+                                .transition()
+                                .duration(300)
+                                .style("opacity", 0);
+                        });
 
                     dotG.append("path")
                         .attr("class", "dotCircle")
