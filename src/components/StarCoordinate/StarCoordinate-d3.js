@@ -1,4 +1,5 @@
 import * as d3 from 'd3'
+import utils from '../common'
 
 class StarCoordinateD3 {
     margin = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -6,9 +7,10 @@ class StarCoordinateD3 {
     height;
     width;
     svg;
+    circleRadius = 2;
+    defaultOpacity = .3;
 
-    valid_options = ["RentedBikeCount", "Hour", "Temperature", "Humidity", "WindSpeed", "Visibility", "DewPointTemperature", "SolarRadiation", "Rainfall", "Snowfall"]
-    valid_options = ["RentedBikeCount", "Hour", "Temperature", "Snowfall", "Visibility", "WindSpeed", "DewPointTemperature", "Rainfall", "Humidity", "SolarRadiation"]
+    valid_options = ["RentedBikeCount", "Hour", "Temperature", "Snowfall", "Visibility", "WindSpeed", "Rainfall", "DewPointTemperature", "Humidity", "SolarRadiation"]
     constructor(el){
         this.el=el;
     };
@@ -24,6 +26,10 @@ class StarCoordinateD3 {
             y: this.height / 2 
         };
 
+        this.seasonColorScale = utils.seasonColorScale
+
+        this.holydaySymbolScale = utils.holydaySymbolScale
+
         // initialize the svg and keep it in a class property to reuse it in renderMatrix()
         this.svg=d3.select(this.el).append("svg")
             .attr("width", this.width + this.margin.left + this.margin.right)
@@ -32,11 +38,11 @@ class StarCoordinateD3 {
             .attr("class","svgG")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
-        this.axesG = this.svg.append("g")
-            .attr("class","axesG");
-        
         this.allDotsG = this.svg.append("g")
             .attr("class", "allDotsG");
+
+        this.axesG = this.svg.append("g")
+            .attr("class","axesG");        
 
         this.axis_tips = this.valid_options.map(option => {
             const angle = (2 * Math.PI / this.valid_options.length) * this.valid_options.indexOf(option);
@@ -176,15 +182,23 @@ class StarCoordinateD3 {
                     // doesn’exist in the select but exist in the new array
                     const dotG=enter.append("g")
                         .attr("class","dotG")
-                        .attr("transform", `translate(${this.anchorPoint.x}, ${this.anchorPoint.y})`);
+                        .attr("transform", `translate(${this.anchorPoint.x}, ${this.anchorPoint.y})`)
+                        .attr("opacity", this.defaultOpacity);
+
 
 
                     // render element as child of each element "g"
-                    dotG.append("g")
-                    .attr("class", "dotCircle")
-                    .append("circle")
-                    .style("opacity", 0.3)
-                    .attr("r", 3)
+                    // dotG.append("g")
+                    //     .attr("class", "dotCircle")
+                    //     .append("path")
+                    //     .style("opacity", 0.3)
+                    //     .attr("r", 3)
+
+                    dotG.append("path")
+                        .attr("class", "dotCircle")
+                        .attr("r", this.circleRadius)
+                        .attr("fill", (item) => this.seasonColorScale(item.Seasons))
+                        .attr("d", d3.symbol().type((item) => this.holydaySymbolScale(item.Holiday)))
                     
 
                     this.updateDots(dotG, 5000);

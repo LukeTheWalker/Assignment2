@@ -1,4 +1,6 @@
 import * as d3 from 'd3';
+import utils from '../common';
+import Tooltip from '../Tooltip/Tooltip';
 
 class ScatterplotD3 {
     margin = { top: 10, right: 10, bottom: 40, left: 60 };
@@ -13,24 +15,6 @@ class ScatterplotD3 {
     yScale;
     seasonColorScale;
     holydaySymbolScale;
-
-    tooltip_text = (d) => `
-        <div class="tooltip-div-before"></div>
-        <strong>🌸 Date:</strong> ${new Date(d.Date).toLocaleDateString("it-IT")} <br>
-        <strong>🚴‍♂️ Bikes Rented:</strong> ${d.RentedBikeCount} bikes!<br>
-        <strong>🕒 Time:</strong> ${d.Hour}:00<br>
-        <strong>🌡️ Temp:</strong> ${d.Temperature}°C<br>
-        <strong>💧 Humidity:</strong> ${d.Humidity}%<br>
-        <strong>🍃 Wind Speed:</strong> ${d.WindSpeed} m/s<br>
-        <strong>👁️ Visibility:</strong> ${d.Visibility} m<br>
-        <strong>❄️ Dew Point:</strong> ${d.DewPointTemperature}°C<br>
-        <strong>☀️ Solar Radiation:</strong> ${d.SolarRadiation} MJ/m²<br>
-        <strong>🌧️ Rainfall:</strong> ${d.Rainfall} mm<br>
-        <strong>❄️ Snowfall:</strong> ${d.Snowfall} cm<br>
-        <strong>🍂 Season:</strong> ${d.Seasons}<br>
-        <strong>🎉 Holiday? </strong>${d.Holiday === "Yes" ? "Yay! 🎊" : "Nope 😔"}<br>
-        <strong>⚙️ Functioning Day?</strong> ${d.FunctioningDay === "Yes" ? "Yep! 😊" : "Nope 😢"}
-        <div class="tooltip-div-after"></div>`;
 
     constructor(el) {
         this.el = el;
@@ -51,6 +35,8 @@ class ScatterplotD3 {
 
         this.xScale = d3.scaleLinear().range([0, this.width]);
         this.yScale = d3.scaleLinear().range([this.height, 0]);
+        this.seasonColorScale = utils.seasonColorScale
+        this.holydaySymbolScale = utils.holydaySymbolScale
 
         const xAxisGroup = this.svg.append("g")
             .attr("class", "xAxisG")
@@ -81,18 +67,12 @@ class ScatterplotD3 {
         this.allDotsG = this.svg.append("g")
             .attr("class", "allDotsG");
 
-        this.seasonColorScale = d3.scaleOrdinal()
-            .domain(["Spring", "Summer", "Autumn", "Winter"])
-            .range(["green", "red", "orange", "blue"]);
+        this.tooltipdiv = d3.select("body").select(".tooltip-div");
 
-        this.holydaySymbolScale = d3.scaleOrdinal()
-            .domain(["No Holiday", "Holiday"])
-            .range([d3.symbolCircle, d3.symbolStar]);
-
-        this.tooltipdiv = d3.select("body").append("div")
-            .attr("class", "tooltip-div")
-            .style("opacity", 0)
-            .style("position", "absolute");
+    //     this.tooltipdiv = d3.select("body").append("div")
+    //         .attr("class", "tooltip-div")
+    //         .style("opacity", 0)
+    //         .style("position", "absolute");
     }
 
     updateDots(selection, xAttribute, yAttribute) {
@@ -154,53 +134,14 @@ class ScatterplotD3 {
                 if (event.selection) {
                     const [[x0, y0], [x1, y1]] = event.selection;
                     const selectedData = this.svg.selectAll(".dotG").data().filter(d =>
-                        x0 <= this.xScale(d.Temperature) && this.xScale(d.Temperature) <= x1 &&
-                        y0 <= this.yScale(d.RentedBikeCount) && this.yScale(d.RentedBikeCount) <= y1
+                        x0 <= this.xScale(d[this.xAttribute]) && this.xScale(d[this.xAttribute]) <= x1 &&
+                        y0 <= this.yScale(d[this.yAttribute]) && this.yScale(d[this.yAttribute]) <= y1
                     );
                     onBrush(selectedData);
                 }}
             );
         this.svg.select(".brushG")
             .call(brush);
-    }
-
-    render_tooltip(d, selector) {
-        const circ = d3.select(selector)
-
-        const translate = circ.attr("transform").match(/translate\(([^)]+)\)/)[1].split(",");
-        const x = parseFloat(translate[0]);
-        const y = parseFloat(translate[1]);
-
-        const tooltipdiv = d3.select(".tooltip-div");
-        tooltipdiv.html(this.tooltip_text(d));
-
-        const tooltipWidth = tooltipdiv.node().getBoundingClientRect().width;
-        const tooltipHeight = tooltipdiv.node().getBoundingClientRect().height;
-
-        const svgPosition = this.svg.node().getBoundingClientRect();
-
-        let flipping_offset = 0;
-
-        if (svgPosition.top + y - tooltipHeight - 5 < 0) {
-            d3.select(".tooltip-div-after").style("border-bottom-color", "#333");
-            d3.select(".tooltip-div-before").style("border-top-color", "");
-
-            flipping_offset = tooltipHeight + 5;
-        }
-        else {
-            d3.select(".tooltip-div-after").style("border-bottom-color", "transparent");
-            d3.select(".tooltip-div-before").style("border-top-color", "#333");
-
-            flipping_offset = - 15;
-        }
-
-        tooltipdiv
-            .interrupt()
-            .style("left", (this.margin.left + svgPosition.left + x - (tooltipWidth / 2) - 10.5) + "px")
-            .style("top", (this.margin.top + svgPosition.top + y - tooltipHeight + flipping_offset) + "px")
-            .transition()
-            .duration(300)
-            .style("opacity", 1)
     }
 
     renderScatterplot = function (visData, xAttribute, yAttribute, controllerMethods) {
@@ -220,11 +161,16 @@ class ScatterplotD3 {
                         })
                         .on('contextmenu', function (e, d) {
                             e.preventDefault();
-                            self.render_tooltip(d, this);
+                            const svgPosition = self.svg.node().getBoundingClientRect();
+                            const pos = {
+                                left: self.margin.left + svgPosition.left,
+                                top : self.margin.top + svgPosition.top,
+                            }
+                            Tooltip.render_tooltip(d, this, pos);
                         })
                         .on('mouseout', function (e, d) {
                             d3.select(this).attr("opacity", self.defaultOpacity).style('stroke', 'none').style('stroke-width', '0');
-                            d3.select(".tooltip-div")
+                            self.tooltipdiv
                                 .interrupt()
                                 .transition()
                                 .duration(300)
