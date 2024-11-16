@@ -68,14 +68,9 @@ class ScatterplotD3 {
             .attr("class", "allDotsG");
 
         this.tooltipdiv = d3.select("body").select(".tooltip-div");
-
-    //     this.tooltipdiv = d3.select("body").append("div")
-    //         .attr("class", "tooltip-div")
-    //         .style("opacity", 0)
-    //         .style("position", "absolute");
     }
 
-    updateDots(selection, xAttribute, yAttribute) {
+    updateDots = function (selection, xAttribute, yAttribute) {
         selection
             .transition().duration(this.transitionDuration)
             .attr("transform", (item) => {
@@ -125,16 +120,16 @@ class ScatterplotD3 {
         this.svgG.select(".yAxisLabel").text(yAttribute);
     }
 
-    addBrush = function (onBrush) {
+    addBrush = function (onBrush, xAttribute, yAttribute) {
         const brush = d3.brush()
             .extent([[0, 0], [this.width, this.height]])
             .filter((e) => !e.ctrlKey && !e.button)
-            .on("start end", (event) => {
+            .on("start brush end", (event) => {
                 if (event.selection) {
                     const [[x0, y0], [x1, y1]] = event.selection;
                     const selectedData = this.allDotsG.selectAll(".dotG").data().filter(d =>
-                        x0 <= this.xScale(d[this.xAttribute]) && this.xScale(d[this.xAttribute]) <= x1 &&
-                        y0 <= this.yScale(d[this.yAttribute]) && this.yScale(d[this.yAttribute]) <= y1
+                        x0 <= this.xScale(d[xAttribute]) && this.xScale(d[xAttribute]) <= x1 &&
+                        y0 <= this.yScale(d[yAttribute]) && this.yScale(d[yAttribute]) <= y1
                     );
                     onBrush(selectedData);
                 }}
@@ -142,6 +137,8 @@ class ScatterplotD3 {
         this.svgG.select(".brushG")
             .call(brush);
     }
+
+    highLightElements = utils.highLightElements(this);
 
     renderScatterplot = function (visData, xAttribute, yAttribute, controllerMethods) {
         if (!visData || !visData.length) return;
@@ -188,7 +185,7 @@ class ScatterplotD3 {
                 exit => exit.remove()
             );
 
-        this.addBrush(controllerMethods.handleOnBrush);
+        this.addBrush(controllerMethods.handleOnBrush, xAttribute, yAttribute);
     }
 
     clear = function () {

@@ -7,6 +7,7 @@ import StarCoordinateD3 from './StarCoordinate-d3'
 
 function StarCoordinateContainer() {
     const data = useSelector(state => state.dataSet.data)
+    const selectedItems = useSelector(state => state.dataSet.selectedItems);
     const dispatch = useDispatch();
 
     // every time the component re-render
@@ -58,6 +59,11 @@ function StarCoordinateContainer() {
         starCoordinateD3.renderStarCoordinate(data, controllerMethods);
 
     }, [data, dispatch]);// if dependencies, useEffect is called after each data update, in our case only matrixData changes.
+
+    useEffect(() => {
+        const starCoordinateD3 = starCoordinateD3Ref.current;
+        starCoordinateD3.highLightElements(selectedItems);
+    }, [selectedItems]);
 
     return (
         <div style={{ width: "100%", height: "100%", padding: "2px 10px 10px 10px", display: "flex", flexDirection: "column", alignItems: "center" }}>

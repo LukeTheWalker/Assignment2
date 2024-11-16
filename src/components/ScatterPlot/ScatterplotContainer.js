@@ -18,6 +18,7 @@ function ScatterplotContainer() {
 
     const xAttribute = useSelector(state => state.scatterPlot.selectedX);
     const yAttribute = useSelector(state => state.scatterPlot.selectedY);
+    const selectedItems = useSelector(state => state.dataSet.selectedItems);
 
     // every time the component re-render
     useEffect(() => {
@@ -73,6 +74,11 @@ function ScatterplotContainer() {
 
         scatterplotD3.renderScatterplot(data, xAttribute, yAttribute, controllerMethods);
     }, [data, xAttribute, yAttribute, dispatch]);// if dependencies, useEffect is called after each data update, in our case only matrixData changes.
+
+    useEffect(() => {
+        const scatterplotD3 = scatterplotD3Ref.current;
+        scatterplotD3.highLightElements(selectedItems);
+    }, [selectedItems]);
 
     return (
         <div style={{ width: "100%", height: "100%", padding: "2px 10px 10px 10px", display: "flex", flexDirection: "column", alignItems: "center" }}>

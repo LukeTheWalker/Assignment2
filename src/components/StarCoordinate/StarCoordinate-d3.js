@@ -35,15 +35,18 @@ class StarCoordinateD3 {
         this.svg=d3.select(this.el).append("svg")
             .attr("width", this.width + this.margin.left + this.margin.right)
             .attr("height", this.height + this.margin.top + this.margin.bottom);
-            
-        this.svg.append("g")
+
+        this.svgG = this.svg.append("g")
             .attr("class","svgG")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+        
+        this.svgG.append("g")
+            .attr("class", "brushG");
 
-        this.allDotsG = this.svg.append("g")
+        this.allDotsG = this.svgG.append("g")
             .attr("class", "allDotsG");
 
-        this.axesG = this.svg.append("g")
+        this.axesG = this.svgG.append("g")
             .attr("class","axesG");        
 
         this.axis_tips = this.valid_options.map(option => {
@@ -88,7 +91,7 @@ class StarCoordinateD3 {
         });
     }
 
-    updateDots(selection, transitionDuration = 0) { 
+    updateDots = function(selection, transitionDuration = 0) { 
         selection
             .transition()
             .duration(transitionDuration)
@@ -98,7 +101,7 @@ class StarCoordinateD3 {
             });
     }
 
-    getPoint = d => {
+    getPoint = function (d) {
         const startPoint = { x: this.anchorPoint.x, y: this.anchorPoint.y };
         const mapped = this.axes.map(axis => {
             const value = axis.accessor(d);
@@ -172,6 +175,27 @@ class StarCoordinateD3 {
         });
     }
 
+    addBrush = function (onBrush) {
+        const brush = d3.brush()
+            .extent([[0, 0], [this.width, this.height]])
+            .filter((e) => !e.ctrlKey && !e.button)
+            .on("start brush end", (event) => {
+                if (event.selection) {
+                    const [[x0, y0], [x1, y1]] = event.selection;
+                    const selectedData = this.allDotsG.selectAll(".dotG").data().filter(d =>{
+                            const position = this.getPoint(d);
+                            return x0 <= position.x && position.x <= x1 &&
+                                   y0 <= position.y && position.y <= y1;
+                        }
+                    );
+                    onBrush(selectedData);
+                }}
+            );
+        this.svgG.select(".brushG")
+            .call(brush);
+    }
+
+    highLightElements = utils.highLightElements(this);
 
     renderStarCoordinate = function (visData, controllerMethods){
         if (!visData || !visData.length) return;
@@ -220,6 +244,7 @@ class StarCoordinateD3 {
                 update => {},
                 exit   => exit.remove()
             )
+        this.addBrush(controllerMethods.handleOnBrush);
     }
 
     clear = function(){
