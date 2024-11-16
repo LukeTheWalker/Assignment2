@@ -1,6 +1,7 @@
 import * as d3 from 'd3'
 import utils from '../common'
 import Tooltip from '../Tooltip/Tooltip';
+import { filterInRectFromQuadtree } from 'vis-utils';
 
 class StarCoordinateD3 {
     margin = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -100,24 +101,29 @@ class StarCoordinateD3 {
                 return `translate(${point.x}, ${point.y})`;
             });
     }
-
-    getPoint = function (d) {
-        const startPoint = { x: this.anchorPoint.x, y: this.anchorPoint.y };
-        const mapped = this.axes.map(axis => {
+    getX = function (d) {
+        const startPointX = this.anchorPoint.x;
+        const mappedX = this.axes.map(axis => {
             const value = axis.accessor(d);
-            const x = axis.xScale(value) - this.anchorPoint.x;
-            const y = axis.yScale(value) - this.anchorPoint.y;
-            return {x, y};
+            return axis.xScale(value) - this.anchorPoint.x;
         });
 
-        const sum = mapped.reduce((pointA, pointB) => {
-            return {
-                x: pointA.x + pointB.x,
-                y: pointA.y + pointB.y
-            };
-        }, startPoint);
+        const sumX = mappedX.reduce((xA, xB) => xA + xB, startPointX);
+        return sumX;
+    };
 
-        return sum;
+    getY = function (d) {
+        const startPointY = this.anchorPoint.y;
+        const mappedY = this.axes.map(axis => {
+            const value = axis.accessor(d);
+            return axis.yScale(value) - this.anchorPoint.y;
+        });
+
+        const sumY = mappedY.reduce((yA, yB) => yA + yB, startPointY);
+        return sumY;
+    };
+    getPoint = function (d) {
+        return { x: this.getX(d), y: this.getY(d) };
     };
 
     updateAxis = function (visData) {
@@ -181,16 +187,18 @@ class StarCoordinateD3 {
             .filter((e) => !e.ctrlKey && !e.button)
             .on("start brush end", (event) => {
                 if (event.selection) {
-                    const [[x0, y0], [x1, y1]] = event.selection;
-                    const selectedData = this.allDotsG.selectAll(".dotG").data().filter(d =>{
-                            const position = this.getPoint(d);
-                            return x0 <= position.x && position.x <= x1 &&
-                                   y0 <= position.y && position.y <= y1;
-                        }
-                    );
+                    // const [[x0, y0], [x1, y1]] = event.selection;
+                    // const selectedData = this.allDotsG.selectAll(".dotG").data().filter(d => {
+                    //     //     const position = this.getPoint(d);
+                    //     //     return x0 <= position.x && position.x <= x1 &&
+                    //     //            y0 <= position.y && position.y <= y1;
+                    //     // }
+                    //     return filterInRectFromQuadtree(this.quadtree, event.selection, d => this.getX(d), d => this.getY(d));
+                    // });
+                    const selectedData = filterInRectFromQuadtree(this.quadtree, event.selection, d => this.getX(d), d => this.getY(d));
                     onBrush(selectedData);
-                }}
-            );
+                }
+            });
         this.svgG.select(".brushG")
             .call(brush);
     }
@@ -201,6 +209,8 @@ class StarCoordinateD3 {
         if (!visData || !visData.length) return;
         this.updateAxis(visData);
         this.addDragging(visData);
+        this.quadtree = d3.quadtree().x(d => this.getX(d)).y(d => this.getY(d)).addAll(visData);
+
 
         this.allDotsG.selectAll(".dotG")
             .data(visData, (itemData) => itemData.index)

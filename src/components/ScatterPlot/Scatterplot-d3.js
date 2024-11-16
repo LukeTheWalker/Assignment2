@@ -1,6 +1,8 @@
 import * as d3 from 'd3';
 import utils from '../common';
 import Tooltip from '../Tooltip/Tooltip';
+import { filterInRectFromQuadtree } from 'vis-utils';
+import { quadtree } from 'd3-quadtree';
 
 class ScatterplotD3 {
     margin = { top: 10, right: 10, bottom: 40, left: 60 };
@@ -126,11 +128,12 @@ class ScatterplotD3 {
             .filter((e) => !e.ctrlKey && !e.button)
             .on("start brush end", (event) => {
                 if (event.selection) {
-                    const [[x0, y0], [x1, y1]] = event.selection;
-                    const selectedData = this.allDotsG.selectAll(".dotG").data().filter(d =>
-                        x0 <= this.xScale(d[xAttribute]) && this.xScale(d[xAttribute]) <= x1 &&
-                        y0 <= this.yScale(d[yAttribute]) && this.yScale(d[yAttribute]) <= y1
-                    );
+                    // const [[x0, y0], [x1, y1]] = event.selection;
+                    // const selectedData = this.allDotsG.selectAll(".dotG").data().filter(d =>
+                    //     x0 <= this.xScale(d[xAttribute]) && this.xScale(d[xAttribute]) <= x1 &&
+                    //     y0 <= this.yScale(d[yAttribute]) && this.yScale(d[yAttribute]) <= y1
+                    // );
+                    const selectedData = filterInRectFromQuadtree(this.quadtree, event.selection, d => this.xScale(d[xAttribute]), d => this.yScale(d[yAttribute]));
                     onBrush(selectedData);
                 }}
             );
@@ -142,7 +145,9 @@ class ScatterplotD3 {
 
     renderScatterplot = function (visData, xAttribute, yAttribute, controllerMethods) {
         if (!visData || !visData.length) return;
+        
         this.updateAxis(visData, xAttribute, yAttribute);
+        this.quadtree = d3.quadtree().x(d => this.xScale(d[xAttribute])).y(d => this.yScale(d[yAttribute])).addAll(visData);
 
         this.allDotsG.selectAll(".dotG")
             .data(visData, (itemData) => itemData.index)

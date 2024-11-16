@@ -1,6 +1,5 @@
 import './Tooltip.css';
-import { useEffect, useRef, Component } from 'react';
-import {useSelector, useDispatch} from 'react-redux'
+import { Component } from 'react';
 import * as d3 from 'd3';
 
 // TODO: import action methods from reducers
@@ -40,7 +39,6 @@ class Tooltip extends Component {
         const tooltipHeight = tooltipdiv.node().getBoundingClientRect().height;
 
         let flipping_offset = 0;
-
 
         if (position.top + y - tooltipHeight - 5 < 0) {
             d3.select(".tooltip-div-after").style("border-bottom-color", "#333");
