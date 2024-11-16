@@ -134,6 +134,9 @@ class ScatterplotD3 {
             .extent([[0, 0], [this.width, this.height]])
             .filter((e) => !e.ctrlKey && !e.button)
             .on("start brush end", (event) => {
+                if (event.type === "start") 
+                    d3.selectAll(".brushG").selectAll(".selection").style("display", "none");
+
                 if (event.selection) {
                     const selectedData = filterInRectFromQuadtree(this.quadtree, event.selection, d => this.xScale(d[xAttribute]), d => this.yScale(d[yAttribute]));
                     onBrush(selectedData);
