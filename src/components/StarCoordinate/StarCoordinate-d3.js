@@ -1,7 +1,7 @@
 import * as d3 from 'd3'
 import utils from '../common'
 import Tooltip from '../Tooltip/Tooltip';
-import { filterInRectFromQuadtree, rotate } from 'vis-utils';
+import { filterInRectFromQuadtree } from 'vis-utils';
 
 class StarCoordinateD3 {
     margin = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -80,10 +80,29 @@ class StarCoordinateD3 {
             // axeG.append("line") 
             //     .style("stroke", "black")
             // Axis label text
-            axeG.append("text")
+
+            const axisLabel = axeG.append("text")
                 .attr("class", "axisLabel")
                 .attr("id", "axisLabel" + axis)
-                .text(axis)
+                .attr("transform", `translate(${-10000}, ${-10000})`)
+                .text(axis);
+
+            const bbox = axisLabel.node().getBBox();
+
+            axeG.append("rect")
+                .attr("class", "axisLabelBackground")
+                .attr("id", "axisLabelBackground" + axis)
+                .attr("x", bbox.x - bbox.width / 2 - 5)
+                .attr("y", bbox.y - 2)
+                .attr("width", bbox.width + 10)
+                .attr("height", bbox.height + 4)
+                .attr("rx", 5)
+                .attr("ry", 5)
+                .attr("transform", `translate(${-10000}, ${-10000})`)
+                .attr("opacity", 0.5)
+
+            axisLabel.raise();
+
         });
 
         this.tooltipdiv = d3.select("body").select(".tooltip-div");
@@ -198,10 +217,14 @@ class StarCoordinateD3 {
             const x_offset = 0;
             const y_offset = angleDegrees > 60 && angleDegrees < 150 ? +2*this.label_offset : -this.label_offset;
 
+            this.axesG.select("#axisLabelBackground" + key)
+                .attr("transform", `translate(${x2 + x_offset}, ${y2 + y_offset})`)
+
             this.axesG.select("#axisLabel" + key)
                 .attr("transform", `translate(${x2 + x_offset}, ${y2 + y_offset})`)
                 .attr("fill", "black")
                 .attr("text-anchor", "middle")
+
         });
     }
 
