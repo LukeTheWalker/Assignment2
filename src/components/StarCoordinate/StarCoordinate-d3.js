@@ -1,7 +1,7 @@
 import * as d3 from 'd3'
 import utils from '../common'
 import Tooltip from '../Tooltip/Tooltip';
-import { filterInRectFromQuadtree } from 'vis-utils';
+import { filterInRectFromQuadtree, rotate } from 'vis-utils';
 
 class StarCoordinateD3 {
     margin = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -14,6 +14,8 @@ class StarCoordinateD3 {
 
     focused;
     toolTipFading = false;
+
+    label_offset = 10;
 
     valid_options = ["RentedBikeCount", "Hour", "Temperature", "Snowfall", "Visibility", "WindSpeed", "Rainfall", "DewPointTemperature", "Humidity", "SolarRadiation"]
     constructor(el){
@@ -55,7 +57,7 @@ class StarCoordinateD3 {
             .attr("class", "brushG");
 
         this.axesG = this.svgG.append("g")
-            .attr("class","axesG");        
+            .attr("class","axesG");      
 
         this.axis_tips = this.valid_options.map(option => {
             const angle = (2 * Math.PI / this.valid_options.length) * this.valid_options.indexOf(option);
@@ -68,11 +70,15 @@ class StarCoordinateD3 {
         this.valid_options.forEach(axis => {
             // Axis line
             const axeG  = this.axesG.append("g")
+                .attr("class", "axisGroup")
+                .attr("id", "axisGroup" + axis);
+
+            axeG.append("g")
                 .attr("class", "axisLine")
                 .attr("id", "axisLine" + axis);
 
-            axeG.append("line") 
-                .style("stroke", "black")
+            // axeG.append("line") 
+            //     .style("stroke", "black")
             // Axis label text
             axeG.append("text")
                 .attr("class", "axisLabel")
@@ -88,8 +94,12 @@ class StarCoordinateD3 {
             d3.select("#axisLabel" + axis)
                 .call(d3.drag()
                     .on("drag", (event) => {
-                        const x = event.x;
-                        const y = event.y;
+                        let x = event.x;
+                        let y = event.y;
+                        const angle = Math.atan2(y - this.anchorPoint.y, x - this.anchorPoint.x);
+                        const angleDegrees = (angle * 180 / Math.PI + 360) % 360;
+                        const y_offset = angleDegrees > 60 && angleDegrees < 150 ? -2*this.label_offset : +this.label_offset;
+                        y = y + y_offset;
                         const index = this.valid_options.indexOf(axis);
                         this.axis_tips[index] = { x, y };
                         this.updateAxis(visData);
@@ -172,18 +182,24 @@ class StarCoordinateD3 {
             const x2 = axis.xScale(domain[1]);
             const y2 = axis.yScale(domain[1]);
             // Axis line
-            this.axesG.select("#axisLine" + key)
-                .select("line")
-                .style("stroke", "black")
-                .attr("x1", x1)
-                .attr("y1", y1)
-                .attr("x2", x2)
-                .attr("y2", y2);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+            const axisLength = Math.hypot(x2 - x1, y2 - y1);
 
-            // Axis label text
+
+            const angleDegrees = (angle + 360) % 360;
+            const special_angle = (angleDegrees >= 140 && angleDegrees <= 320);
+            const scaling = special_angle ? -1 : 1;
+            this.axesG.select("#axisLine" + key)
+                .attr("transform", `translate(${this.anchorPoint.x}, ${this.anchorPoint.y}) rotate(${angleDegrees})`)
+                .call(d3.axisBottom(d3.scaleLinear().domain(domain).range([0, axisLength])))
+                .selectAll(".tick > text, .tick > line")
+                .attr("transform", `scale(${scaling}, ${scaling})`);
+            
+            const x_offset = 0;
+            const y_offset = angleDegrees > 60 && angleDegrees < 150 ? +2*this.label_offset : -this.label_offset;
+
             this.axesG.select("#axisLabel" + key)
-                .attr("x", x2)
-                .attr("y", y2)
+                .attr("transform", `translate(${x2 + x_offset}, ${y2 + y_offset})`)
                 .attr("fill", "black")
                 .attr("text-anchor", "middle")
         });
