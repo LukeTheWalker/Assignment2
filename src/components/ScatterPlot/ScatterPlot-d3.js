@@ -131,8 +131,7 @@ class ScatterplotD3 {
     addBrush = function (onBrush, xAttribute, yAttribute) {
         const self = this;
         const brush = d3.brush()
-            .extent([[0, 0], [this.width, this.height]])
-            .filter((e) => !e.ctrlKey && !e.button)
+            .extent([[-20, 0], [this.width, this.height+20]])
             .on("start brush end", (event) => {
                 if (event.type === "start") 
                     d3.selectAll(".brushG").selectAll(".selection").style("display", "none");

@@ -81,7 +81,7 @@ function ScatterplotContainer() {
     }, [selectedItems]);
 
     return (
-        <div style={{ width: "100%", height: "100%", padding: "2px 10px 10px 10px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-evenly", width: "100%" }}>
                 <Select options={options} value={options.find(option => option.value === xAttribute)} styles={{ container: base => ({ ...base, minWidth: 200 }) }} onChange={(selectedOption) => dispatch(setSelectedX(selectedOption.value))} />
                 <Select options={options} value={options.find(option => option.value === yAttribute)} styles={{ container: base => ({ ...base, minWidth: 200 }) }} onChange={(selectedOption) => dispatch(setSelectedY(selectedOption.value))} />
