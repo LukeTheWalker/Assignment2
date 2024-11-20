@@ -20,7 +20,7 @@ class Tooltip extends Component {
         <strong>🌧️ Rainfall:</strong> ${d.Rainfall} mm<br>
         <strong>❄️ Snowfall:</strong> ${d.Snowfall} cm<br>
         <strong>🍂 Season:</strong> ${d.Seasons}<br>
-        <strong>🎉 Holiday? </strong>${d.Holiday === "Yes" ? "Yay! 🎊" : "Nope 😔"}<br>
+        <strong>🎉 Holiday? </strong>${d.Holiday === "Holiday" ? "Yay! 🎊" : "Nope 😔"}<br>
         <strong>⚙️ Functioning Day?</strong> ${d.FunctioningDay === "Yes" ? "Yep! 😊" : "Nope 😢"}
         <div class="tooltip-div-after"></div>`;
         

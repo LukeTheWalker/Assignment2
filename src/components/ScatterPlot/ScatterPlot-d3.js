@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import utils from '../common';
 import Tooltip from '../Tooltip/Tooltip';
 import { filterInRectFromQuadtree } from 'vis-utils';
+import gear_svg from '../../img/gear';
 
 class ScatterplotD3 {
     margin = { top: 10, right: 10, bottom: 40, left: 60 };
@@ -200,7 +201,16 @@ class ScatterplotD3 {
                         .attr("class", "dotCircle")
                         .attr("r", this.circleRadius)
                         .attr("fill", (item) => this.seasonColorScale(item.Seasons))
-                        .attr("d", d3.symbol().type((item) => this.holydaySymbolScale(item.Holiday)))
+                        .attr("d", d3.symbol().type((item) => this.holydaySymbolScale(item.Holiday)));
+                    
+                    itemG.filter((item) => item.FunctioningDay === "No")
+                        .append("path")
+                        .attr("class", "gear")
+                        .attr("fill", (item) => this.seasonColorScale(item.Seasons))
+                        .attr("transform", "translate(-9, -9) scale(0.05)")
+                        .attr("d", gear_svg)
+                        .attr("stroke", "black")
+                        .attr("stroke-width", "1");
 
                     this.updateDots(itemG, xAttribute, yAttribute);
                 },

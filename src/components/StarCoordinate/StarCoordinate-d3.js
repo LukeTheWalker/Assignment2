@@ -2,6 +2,7 @@ import * as d3 from 'd3'
 import utils from '../common'
 import Tooltip from '../Tooltip/Tooltip';
 import { filterInRectFromQuadtree } from 'vis-utils';
+import gear_svg from '../../img/gear';
 
 class StarCoordinateD3 {
     margin = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -296,13 +297,23 @@ class StarCoordinateD3 {
                     const dotG=enter.append("g")
                         .attr("class","dotG")
                         .attr("transform", `translate(${this.anchorPoint.x}, ${this.anchorPoint.y})`)
-                        .attr("opacity", this.defaultOpacity)
+                        .attr("opacity", this.defaultOpacity);
 
                     dotG.append("path")
                         .attr("class", "dotCircle")
                         .attr("r", this.circleRadius)
                         .attr("fill", (item) => this.seasonColorScale(item.Seasons))
-                        .attr("d", d3.symbol().type((item) => this.holydaySymbolScale(item.Holiday)))
+                        .attr("d", d3.symbol().type((item) => this.holydaySymbolScale(item.Holiday)));
+                    
+                    dotG.filter((item) => item.FunctioningDay === "No")        
+                        .attr("class", "gear")
+                        .append("path")
+                        .attr("fill", (item) => this.seasonColorScale(item.Seasons))
+                        .attr("transform", "translate(-9, -9) scale(0.05)")
+                        .attr("d", gear_svg)
+                        .attr("stroke", "black")
+                        .attr("stroke-width", "1");
+
                     
 
                     this.updateDots(dotG, 5000);
