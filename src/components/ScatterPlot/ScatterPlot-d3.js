@@ -31,9 +31,14 @@ class ScatterplotD3 {
         this.width = this.size.width - this.margin.left - this.margin.right;
         this.height = this.size.height - this.margin.top - this.margin.bottom;
 
+        this.legendSvg = d3.select(this.el).append("svg")
+            .attr("width", "100%")
+            .attr("height", 50);
+
         this.svg = d3.select(this.el).append("svg")
             .attr("width", this.width + this.margin.left + this.margin.right)
             .attr("height", this.height + this.margin.top + this.margin.bottom);
+            
         this.svgG = this.svg.append("g")
             .attr("class", "svgG")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
@@ -65,6 +70,10 @@ class ScatterplotD3 {
             .attr("fill", "black")
             .style("text-anchor", "middle");
                                 
+        this.legend = this.legendSvg.append("g")
+            .attr("class", "legend")
+            .attr("transform", "translate(25, 25");
+
         this.allDotsG = this.svgG.append("g")
             .attr("class", "allDotsG");
 
@@ -129,6 +138,8 @@ class ScatterplotD3 {
         this.svgG.select(".yAxisLabel").text(yAttribute);
     }
 
+    createLegend = utils.createLegend(this);
+
     addBrush = function (onBrush, xAttribute, yAttribute) {
         const self = this;
         const brush = d3.brush()
@@ -187,6 +198,7 @@ class ScatterplotD3 {
         if (!visData || !visData.length) return;
         
         this.updateAxis(visData, xAttribute, yAttribute);
+        this.createLegend();
         this.quadtree = d3.quadtree().x(d => this.xScale(d[xAttribute])).y(d => this.yScale(d[yAttribute])).addAll(visData);
 
         this.allDotsG.selectAll(".dotG")

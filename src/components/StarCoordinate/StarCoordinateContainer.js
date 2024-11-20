@@ -23,7 +23,7 @@ function StarCoordinateContainer() {
         let height;
         if (divStarCoordinateContainerRef.current !== undefined) {
             width = divStarCoordinateContainerRef.current.clientWidth
-            height = divStarCoordinateContainerRef.current.clientHeight
+            height = divStarCoordinateContainerRef.current.clientHeight - 50
         }
         if (width > height) {
             width = height;

@@ -42,6 +42,10 @@ class StarCoordinateD3 {
             .attr("width", this.width + this.margin.left + this.margin.right)
             .attr("height", this.height + this.margin.top + this.margin.bottom);
 
+        this.legendSvg = d3.select(this.el).append("svg")
+            .attr("width", "100%")
+            .attr("height", 50);
+
         this.svgG = this.svg.append("g")
             .attr("class","svgG")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
@@ -50,6 +54,10 @@ class StarCoordinateD3 {
             left: this.margin.left + this.svg.node().getBoundingClientRect().left,
             top : this.margin.top  + this.svg.node().getBoundingClientRect().top,
         } 
+
+        this.legend = this.legendSvg.append("g")
+            .attr("class", "legend")
+            .attr("transform", "translate(25, 25");
         
         this.allDotsG = this.svgG.append("g")
             .attr("class", "allDotsG");
@@ -229,6 +237,8 @@ class StarCoordinateD3 {
         });
     }
 
+    createLegend = utils.createLegend(this);
+
     addBrush = function (onBrush) {
         const self = this;
         const brush = d3.brush()
@@ -285,6 +295,7 @@ class StarCoordinateD3 {
 
     renderStarCoordinate = function (visData, controllerMethods){
         if (!visData || !visData.length) return;
+        this.createLegend();
         this.updateAxis(visData);
         this.addDragging(visData);
         this.quadtree = d3.quadtree().x(d => this.getX(d)).y(d => this.getY(d)).addAll(visData);

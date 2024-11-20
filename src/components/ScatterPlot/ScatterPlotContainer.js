@@ -33,7 +33,7 @@ function ScatterplotContainer() {
         let height;
         if (divContainerRef.current !== undefined) {
             width = divContainerRef.current.clientWidth
-            height = divContainerRef.current.clientHeight
+            height = divContainerRef.current.clientHeight - 50 
         }
         return { width: width, height: height };
     }
@@ -83,8 +83,8 @@ function ScatterplotContainer() {
     return (
         <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-evenly", width: "100%" }}>
-                <Select options={options} value={options.find(option => option.value === xAttribute)} styles={{ container: base => ({ ...base, minWidth: 200 }) }} onChange={(selectedOption) => dispatch(setSelectedX(selectedOption.value))} />
-                <Select options={options} value={options.find(option => option.value === yAttribute)} styles={{ container: base => ({ ...base, minWidth: 200 }) }} onChange={(selectedOption) => dispatch(setSelectedY(selectedOption.value))} />
+                <Select className='select' options={options} value={options.find(option => option.value === xAttribute)} styles={{ container: base => ({ ...base, minWidth: 200 }) }} onChange={(selectedOption) => dispatch(setSelectedX(selectedOption.value))} />
+                <Select className='select' options={options} value={options.find(option => option.value === yAttribute)} styles={{ container: base => ({ ...base, minWidth: 200 }) }} onChange={(selectedOption) => dispatch(setSelectedY(selectedOption.value))} />
             </div>
             <div ref={divContainerRef} className="scatterplotDivContainer" style={{ width: "100%", height: "100%" }}> </div>
         </div>

@@ -26,3 +26,7 @@
     stroke: none;                  /* Remove any stroke from the handles */
     fill: none;    /* Blue color for handles */
 }
+
+text {
+    font-family: 'Roboto', sans-serif;
+}
