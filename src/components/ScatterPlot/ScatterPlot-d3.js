@@ -72,7 +72,7 @@ class ScatterplotD3 {
                                 
         this.legend = this.legendSvg.append("g")
             .attr("class", "legend")
-            .attr("transform", "translate(25, 25");
+            .attr("transform", "translate(25, 25)");
 
         this.allDotsG = this.svgG.append("g")
             .attr("class", "allDotsG");
@@ -86,6 +86,8 @@ class ScatterplotD3 {
         } 
 
         this.tooltipdiv = d3.select("body").select(".tooltip-div");
+
+        this.createLegend();
     }
 
     updateDots = function (selection, xAttribute, yAttribute) {
@@ -188,7 +190,6 @@ class ScatterplotD3 {
                 self.toolTipFading = true;
 
             })
-            
             .call(brush);
     }
 
@@ -198,7 +199,6 @@ class ScatterplotD3 {
         if (!visData || !visData.length) return;
         
         this.updateAxis(visData, xAttribute, yAttribute);
-        this.createLegend();
         this.quadtree = d3.quadtree().x(d => this.xScale(d[xAttribute])).y(d => this.yScale(d[yAttribute])).addAll(visData);
 
         this.allDotsG.selectAll(".dotG")

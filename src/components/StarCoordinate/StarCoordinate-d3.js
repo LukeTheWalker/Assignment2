@@ -57,7 +57,7 @@ class StarCoordinateD3 {
 
         this.legend = this.legendSvg.append("g")
             .attr("class", "legend")
-            .attr("transform", "translate(25, 25");
+            .attr("transform", "translate(25, 25)");
         
         this.allDotsG = this.svgG.append("g")
             .attr("class", "allDotsG");
@@ -86,10 +86,8 @@ class StarCoordinateD3 {
                 .attr("class", "axisLine")
                 .attr("id", "axisLine" + axis);
 
-            // axeG.append("line") 
-            //     .style("stroke", "black")
+           
             // Axis label text
-
             const axisLabel = axeG.append("text")
                 .attr("class", "axisLabel")
                 .attr("id", "axisLabel" + axis)
@@ -115,6 +113,8 @@ class StarCoordinateD3 {
         });
 
         this.tooltipdiv = d3.select("body").select(".tooltip-div");
+
+        this.createLegend();
     }
 
     addDragging = function(visData){
@@ -295,7 +295,7 @@ class StarCoordinateD3 {
 
     renderStarCoordinate = function (visData, controllerMethods){
         if (!visData || !visData.length) return;
-        this.createLegend();
+
         this.updateAxis(visData);
         this.addDragging(visData);
         this.quadtree = d3.quadtree().x(d => this.getX(d)).y(d => this.getY(d)).addAll(visData);
