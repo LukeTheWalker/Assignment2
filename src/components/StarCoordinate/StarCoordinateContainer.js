@@ -1,19 +1,15 @@
 import './StarCoordinate.css'
 import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
-import { updateSelectedItem } from '../../redux/DataSetSlice';
+import { updateSelectedItem} from '../../redux/GlobalSlice';
 
 import StarCoordinateD3 from './StarCoordinate-d3'
 
 function StarCoordinateContainer() {
     const data = useSelector(state => state.dataSet.data)
-    const selectedItems = useSelector(state => state.dataSet.selectedItems);
+    const selectedItems = useSelector(state => state.global.selectedItems);
+    const resized = useSelector(state => state.global.resized);
     const dispatch = useDispatch();
-
-    // every time the component re-render
-    useEffect(() => {
-        console.log("StarCoordinateContainer useEffect (called each time matrix re-renders)");
-    }); // if no dependencies, useEffect is called at each re-render
 
     const divStarCoordinateContainerRef  = useRef(null);
     const starCoordinateD3Ref = useRef(null)
@@ -45,7 +41,7 @@ function StarCoordinateContainer() {
             const starCoordinateD3 = starCoordinateD3Ref.current;
             starCoordinateD3.clear()
         }
-    }, []);// if empty array, useEffect is called after the component did mount (has been created)
+    }, [resized]);// if empty array, useEffect is called after the component did mount (has been created)
 
     // did update, called each time dependencies change, dispatch remain stable over component cycles
     useEffect(() => {
@@ -57,8 +53,7 @@ function StarCoordinateContainer() {
         const controllerMethods = { handleOnBrush }
 
         starCoordinateD3.renderStarCoordinate(data, controllerMethods);
-
-    }, [data, dispatch]);// if dependencies, useEffect is called after each data update, in our case only matrixData changes.
+    }, [data, resized, dispatch]);// if dependencies, useEffect is called after each data update, in our case only matrixData changes.
 
     useEffect(() => {
         const starCoordinateD3 = starCoordinateD3Ref.current;

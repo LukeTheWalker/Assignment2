@@ -27,12 +27,6 @@ export const dataSetSlice = createSlice({
     name: 'dataSet',
     initialState: {
         data: [], // Initial state should be an empty array
-        selectedItems: []
-    },
-    reducers: {
-        updateSelectedItem: (state, action) => {
-            state.selectedItems = action.payload; // Store selected items in state
-        }
     },
     extraReducers: builder => {
         builder.addCase(getSeoulBikeData.fulfilled, (state, action) => {
@@ -40,7 +34,5 @@ export const dataSetSlice = createSlice({
         });
     }
 });
-
-export const { updateSelectedItem } = dataSetSlice.actions;
 
 export default dataSetSlice.reducer;

@@ -1,7 +1,7 @@
 import './ScatterPlot.css'
 import { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
-import { updateSelectedItem } from '../../redux/DataSetSlice';
+import { updateSelectedItem } from '../../redux/GlobalSlice';
 import { setSelectedX, setSelectedY } from '../../redux/ScatterPlotSlice';
 import Select from 'react-select';
 
@@ -18,12 +18,8 @@ function ScatterplotContainer() {
 
     const xAttribute = useSelector(state => state.scatterPlot.selectedX);
     const yAttribute = useSelector(state => state.scatterPlot.selectedY);
-    const selectedItems = useSelector(state => state.dataSet.selectedItems);
-
-    // every time the component re-render
-    useEffect(() => {
-        console.log("ScatterplotContainer useEffect (called each time matrix re-renders)");
-    }); // if no dependencies, useEffect is called at each re-render
+    const selectedItems = useSelector(state => state.global.selectedItems);
+    const resized = useSelector(state => state.global.resized);
 
     const divContainerRef = useRef(null);
     const scatterplotD3Ref = useRef(null)
@@ -50,11 +46,11 @@ function ScatterplotContainer() {
             const scatterplotD3 = scatterplotD3Ref.current;
             scatterplotD3.clear()
         }
-    }, []);// if empty array, useEffect is called after the component did mount (has been created)
+    }, [resized]);// if empty array, useEffect is called after the component did mount (has been created)
 
     // did update, called each time dependencies change, dispatch remain stable over component cycles
     useEffect(() => {
-        console.log("ScatterplotContainer useEffect with dependency [matrixData,dispatch], called each time matrixData changes...");
+        console.log("ScatterplotContainer useEffect with dependency [data, resized, xvalues, dispatch], called each time matrixData changes...");
         const scatterplotD3 = scatterplotD3Ref.current;
 
         const handleOnMouseEnter = function (cellData) {
@@ -73,7 +69,7 @@ function ScatterplotContainer() {
         }
 
         scatterplotD3.renderScatterplot(data, xAttribute, yAttribute, controllerMethods);
-    }, [data, xAttribute, yAttribute, dispatch]);// if dependencies, useEffect is called after each data update, in our case only matrixData changes.
+    }, [data, resized, xAttribute, yAttribute, dispatch]);// if dependencies, useEffect is called after each data update, in our case only matrixData changes.
 
     useEffect(() => {
         const scatterplotD3 = scatterplotD3Ref.current;
