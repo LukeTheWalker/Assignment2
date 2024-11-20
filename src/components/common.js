@@ -77,17 +77,17 @@ const utils = {
     highLightElements: (self) => (selectedItems) => {
             if (selectedItems.length === 0) {
                 self.allDotsG.selectAll(".dotG")
-                .select(".dotCircle")
+                .selectChildren()
                 .attr("fill", (item) => self.seasonColorScale(item.Seasons));
             } else {
                 self.allDotsG.selectAll(".dotG")
-                .select(".dotCircle")
+                .selectChildren()
                 .attr("fill", "grey");
     
                 selectedItems.forEach(item => {
                     self.allDotsG.selectAll(".dotG")
                         .filter(d => d.index === item.index)
-                        .select(".dotCircle")
+                        .selectChildren()
                         .attr("fill", (d) => self.seasonColorScale(d.Seasons));
                     });
             }
