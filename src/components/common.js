@@ -4,7 +4,7 @@ import gear_svg from '../img/gear';
 const utils = {
     seasonColorScale:  d3.scaleOrdinal()
         .domain(["Spring", "Summer", "Autumn", "Winter"])
-        .range([d3.color("#abdda4"), d3.color("#2b83ba"), d3.color("#fdae61"), d3.color("#d7191c")]),
+        .range([d3.color("#abdda4"), d3.color("#d7191c"), d3.color("#fdae61"), d3.color("#2b83ba")]),
 
     holydaySymbolScale: d3.scaleOrdinal()
         .domain(["No Holiday", "Holiday"])
