@@ -219,7 +219,7 @@ class ScatterplotD3 {
                         .append("path")
                         .attr("class", "gear")
                         .attr("fill", (item) => this.seasonColorScale(item.Seasons))
-                        .attr("transform", "translate(-9, -9) scale(0.05)")
+                        .attr("transform", "translate(-9.2, -9.2) scale(0.05)")
                         .attr("d", gear_svg)
                         .attr("stroke", "black")
                         .attr("stroke-width", "1");
