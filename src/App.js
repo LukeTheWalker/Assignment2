@@ -1,31 +1,34 @@
 import './App.css';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSeoulBikeData } from './redux/DataSetSlice';
 import { setResized } from './redux/GlobalSlice';
-import ScatterplotContainer from './components/ScatterPlot/ScatterPlotContainer'; // Import Scatterplot component
-import StarCoordinateContainer from './components/StarCoordinate/StarCoordinateContainer'; // Import second visualization
+import ScatterplotContainer from './components/ScatterPlot/ScatterPlotContainer';
+import StarCoordinateContainer from './components/StarCoordinate/StarCoordinateContainer';
 
 function App() {
     const dispatch = useDispatch();
-    let   resized = useSelector(state => state.global.resized);
-    // Fetch bike-sharing data when component mounts
+    const resizedRef = useRef(useSelector(state => state.global.resized)); // Use a ref to persist the value
+
     useEffect(() => {
         dispatch(getSeoulBikeData());
-        window.addEventListener("resize", () => {
+
+        const handleResize = () => {
             clearTimeout(window.resizeend);
             window.resizeend = setTimeout(() => {
-                resized = !resized;
-                dispatch(setResized(resized));
+                resizedRef.current = !resizedRef.current;
+                dispatch(setResized(resizedRef.current));
             }, 500);
-        })
-        return () => window.removeEventListener("resize", () => {});
-    }, []);
+        };
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, [dispatch]); // Include dispatch in the dependency array
 
     return (
         <div className="App">
-            <ScatterplotContainer /> {/* Render scatterplot */}
-            <StarCoordinateContainer /> {/* Render second visualization */}
+            <ScatterplotContainer />
+            <StarCoordinateContainer />
         </div>
     );
 }
